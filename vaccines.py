@@ -1,12 +1,19 @@
 
 import smtplib
 import requests
+import json
 import time
 from email.message import EmailMessage
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from bs4 import BeautifulSoup
 
+# global variables
+printStats = False
+sendEmailNot = False
+user = ""
+email = ""
+pswd = ""
 
 ######################## Email Functions #######################
 def craftMessage(date):
@@ -14,8 +21,8 @@ def craftMessage(date):
     msg = MIMEMultipart('alternative')
 
     msg['Subject'] = 'Vaccine Opening'
-    msg['From'] = 'ald01845@gmail.com'
-    msg['To'] = 'aldean303@gmail.com'
+    msg['From'] = email
+    msg['To'] = email
 
     text = """
     Dear Alec,
@@ -57,7 +64,7 @@ def sendEmail(msg):
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
     #use gmail app password for added security
-    s.login('ald01845','prcgdbsgxfohxmoy')
+    s.login(user, pswd)
     s.send_message(msg)
     s.quit()
 
@@ -127,7 +134,8 @@ def run():
             continue
 
         print(appts)
-        print(stats)
+        if printStats:
+            print(stats)
 
         stats['minutes'] += 1/12
 
@@ -139,12 +147,25 @@ def run():
 
         for d in appts:
             if appts[d] > 0:
-                # msg = craftMessage(d)
-                # sendEmail(msg)
+                if sendEmailNot:
+                    msg = craftMessage(d)
+                    sendEmail(msg)
                 print("Found appointment!!")
                 stats['appts'] += 1
 
         time.sleep(sleepy)
 
 if __name__ == "__main__":
+
+    # load parameters
+    params = {}
+    with open('config.json') as json_file: 
+        params = json.load(json_file)
+
+        sendEmailNot = params["send_email_notification"]
+        printStats = params["print_statistics"]
+        email = params['your_email']
+        user = params['your_gmail_username']
+        pswd = params['your_google_app_password']
+
     run()
