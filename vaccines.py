@@ -148,8 +148,15 @@ def run():
         for d in appts:
             if appts[d] > 0:
                 if sendEmailNot:
-                    msg = craftMessage(d)
-                    sendEmail(msg)
+                    
+                    try:
+                        msg = craftMessage(d)
+                        sendEmail(msg)
+                    except Exception:
+                        print("Failed to send email. Please check config.json")
+                        time.sleep(sleepy)
+                        continue
+
                 print("Found appointment!!")
                 stats['appts'] += 1
 
