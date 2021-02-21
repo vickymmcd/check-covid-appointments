@@ -15,6 +15,9 @@ This program requires the following dependencies:
 - Beautiful Soup 4
   - Once Python is installed, run ```pip install beautifulsoup4```
   - This library makes it easier to parse the html from web pages
+- Git
+  - Check to see if Git is already installed by running ```git --version```
+  - If it's not installed, head to [Git's website](https://git-scm.com/download/win) to install
 
 In addition to those dependencies, you need to edit the config file **config.json** to include your corresponding information, such as email addresss and Google App credentials.
 
@@ -37,8 +40,12 @@ To create your gmail app credentials, follow these steps:
 
 ## Usage
 
-Once you've filled out the *config.json* file to your satisfaction, simply run
+Once you've filled out the *config.json* file to your satisfaction, simply run the following commands:
 
-```python vaccines.py``` 
+```
+git clone https://github.com/alecdean/check-covid-appointments.git
+cd check-covid-vaccines
+python vaccines.py
+``` 
 
-in your command line, and you should begin to see the results of each search printed every few seconds.
+After running the last command, you should begin to see the results of each search printed every few seconds.
