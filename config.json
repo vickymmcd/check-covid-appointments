@@ -3,5 +3,5 @@
     "your_gmail_username": "",
     "your_google_app_password":"",
     "print_statistics": false,
-    "send_email_notification": true
+    "send_email_notification": false
 }

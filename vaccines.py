@@ -72,14 +72,15 @@ def sendEmail(msg):
 ###################### Web Parsing Functions ############################
 
 # make get request and return html of the search results
-def getHTML():
+def getHTML(pageNum):
     baseURL = 'https://www.maimmunizations.org/clinic/search?'
 
     params = {
         'q[services_name_in][]': 'Vaccination',
         'search_radius': 'All',
         'q[venue_search_name_or_venue_name_i_cont]': 'Gillette',
-        'commit': 'Search'
+        'commit': 'Search',
+        'page': pageNum
     }
 
     resp = requests.get(baseURL, params=params)
@@ -89,12 +90,11 @@ def getHTML():
     return html
 
 # get number of available appointments each day listed
-def parseResp(html):
+def parseResp(html, apptsDict={}):
     parsed_html = BeautifulSoup(html, features='html.parser')
     
     gilletteList = parsed_html.body.div.find_all('div', attrs={'class':'md:flex-shrink text-gray-800'})
 
-    apptsDict = {}
     for day in gilletteList:
         dayHeader = day.find('p', attrs={'class':'text-xl font-black'})
         dayList = dayHeader.text.split()
@@ -121,10 +121,15 @@ def run():
     sleepy = 5
     prevAppt = {}
     stats = {"minutes":0, "appts":0}
+
     while True:
         try:
-            html = getHTML()
-            appts = parseResp(html)
+            htmlPage1 = getHTML('1')
+            appts = parseResp(htmlPage1)
+            
+            htmlPage2 = getHTML('2')
+            appts = parseResp(htmlPage2, appts)
+
         # catch either web connection error or website is overloaded error
         except Exception:
             print("Request failed, trying again.")
@@ -144,16 +149,15 @@ def run():
         prevAppt = appts
 
         for d in appts:
-            if appts[d] > 0:
-                if sendEmailNot:
-                    
-                    try:
-                        msg = craftMessage(d)
-                        sendEmail(msg)
-                    except Exception:
-                        print("Failed to send email. Please check config.json")
-                        time.sleep(sleepy)
-                        continue
+            if appts[d] > 0 and sendEmailNot:
+                
+                try:
+                    msg = craftMessage(d)
+                    sendEmail(msg)
+                except Exception:
+                    print("Failed to send email. Please check config.json")
+                    time.sleep(sleepy)
+                    continue
 
                 print("Found appointment!!")
                 stats['appts'] += 1
