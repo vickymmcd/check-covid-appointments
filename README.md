@@ -4,9 +4,7 @@
 
 This is a simple Python program that checks the Massachusetts' COVID vaccine appointment website every so often for availablities.
 
-## Usage
-
-### Installation
+## Installation
 
 This program requires the following dependencies:
 
@@ -19,6 +17,10 @@ This program requires the following dependencies:
   - This library makes it easier to parse the html from web pages
 
 In addition to those dependencies, you need to edit the config file **config.json** to include your corresponding information, such as email addresss and Google App credentials.
+
+### Google App Setup
+
+By setting up Gmail App credentials, you are allowing this program to send you mail, notifying you when an appointment becomes available.
 
 To create your gmail app credentials, follow these steps:
 
@@ -33,9 +35,10 @@ To create your gmail app credentials, follow these steps:
 
 **Note**: Google creates these passwords for you as an added layer of security, so that you don't have to type in your own Google password.
 
-By setting up Gmail App credentials, you are allowing this program to send you mail, notifying you when an appointment becomes available.
-
-### Running the program
+## Usage
 
 Once you've filled out the *config.json* file to your satisfaction, simply run
-```python vaccines.py``` in your command line, and you should begin to see the results of each search printed every few seconds.
+
+```python vaccines.py``` 
+
+in your command line, and you should begin to see the results of each search printed every few seconds.
