@@ -25,7 +25,7 @@ def craftMessage(date):
     msg['To'] = email
 
     text = """
-    Dear Alec,
+    Dear """+user+""",
 
     https://www.maimmunizations.org/clinic/search?q%5Bservices_name_in%5D%5B%5D=Vaccination&location=&search_radius=All&q%5Bvenue_search_name_or_venue_name_i_cont%5D=Gillette&q%5Bvaccinations_name_i_cont%5D=&commit=Search#search_results
 
@@ -37,7 +37,7 @@ def craftMessage(date):
 
     html = """
 
-    <p>Dear Alec,<br><br>
+    <p>Dear """ + user+""",<br><br>
     
     <a href="https://www.maimmunizations.org/clinic/search?q%5Bservices_name_in%5D%5B%5D=Vaccination&location=&search_radius=All&q%5Bvenue_search_name_or_venue_name_i_cont%5D=Gillette&q%5Bvaccinations_name_i_cont%5D=&commit=Search#search_results">
     MAImmunizations Search Results
@@ -92,18 +92,16 @@ def getHTML():
 def parseResp(html):
     parsed_html = BeautifulSoup(html, features='html.parser')
     
-    gilletteList = parsed_html.body.div.find_all('div',
-     attrs={'class':'md:flex justify-between -mx-2 md:mx-0 px-2 md:px-4 pt-4 pb-4 border-b border-gray-200'})
-
+    gilletteList = parsed_html.body.div.find_all('div', attrs={'class':'md:flex-shrink text-gray-800'})
 
     apptsDict = {}
     for day in gilletteList:
-        dayHeader = day.div.find('p', attrs={'class':'text-xl font-black'})
+        dayHeader = day.find('p', attrs={'class':'text-xl font-black'})
         dayList = dayHeader.text.split()
         date = dayList[-1]
 
         # find available appointments
-        allP = day.div.find_all('p')
+        allP = day.find_all('p')
         for p in allP:
 
             if "Available" in p.text:
