@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from bs4 import BeautifulSoup
 
+
 # global variables
 printStats = False
 sendEmailNot = False
@@ -20,14 +21,14 @@ def craftMessage(date, emailparam):
 
     msg = MIMEMultipart('alternative')
 
-    msg['Subject'] = 'Gillette Vaccine Opening'
+    msg['Subject'] = 'DANVERS Vaccine Opening'
     msg['From'] = emailparam
     msg['To'] = emailparam
 
     text = """
     Dear """+user+""",
 
-    https://www.maimmunizations.org/clinic/search?q%5Bservices_name_in%5D%5B%5D=Vaccination&location=&search_radius=All&q%5Bvenue_search_name_or_venue_name_i_cont%5D=Gillette&q%5Bvaccinations_name_i_cont%5D=&commit=Search#search_results
+    https://vaxfinder.mass.gov/locations/doubletree-hotel-danvers/
 
     It appears a vaccine opening has occurred on """ + date + """. Please visit the site quickly to book an appointment.
 
@@ -39,7 +40,7 @@ def craftMessage(date, emailparam):
 
     <p>Dear """ + user+""",<br><br>
 
-    <a href="https://www.maimmunizations.org/clinic/search?q%5Bservices_name_in%5D%5B%5D=Vaccination&location=&search_radius=All&q%5Bvenue_search_name_or_venue_name_i_cont%5D=Gillette&q%5Bvaccinations_name_i_cont%5D=&commit=Search#search_results">
+    <a href="https://vaxfinder.mass.gov/locations/doubletree-hotel-danvers/">
     MAImmunizations Search Results
     </a><br><br>
 
@@ -69,22 +70,10 @@ def sendEmail(msg, msg2):
     s.send_message(msg2)
     s.quit()
 
+def getHTML():
+    baseURL = 'https://vaxfinder.mass.gov/locations/doubletree-hotel-danvers/'
 
-###################### Web Parsing Functions ############################
-
-# make get request and return html of the search results
-def getHTML(pageNum):
-    baseURL = 'https://www.maimmunizations.org/clinic/search?'
-
-    params = {
-        'q[services_name_in][]': 'Vaccination',
-        'search_radius': 'All',
-        'q[venue_search_name_or_venue_name_i_cont]': 'Gillette',
-        'commit': 'Search',
-        'page': pageNum
-    }
-
-    resp = requests.get(baseURL, params=params)
+    resp = requests.get(baseURL)
 
     html = resp.text
 
@@ -93,29 +82,19 @@ def getHTML(pageNum):
 # get number of available appointments each day listed
 def parseResp(html, apptsDict={}):
     parsed_html = BeautifulSoup(html, features='html.parser')
+    table = parsed_html.find(lambda tag: tag.name=='table')
+    rows = table.findAll(lambda tag: tag.name=='tr')
 
-    gilletteList = parsed_html.body.div.find_all('div', attrs={'class':'md:flex-shrink text-gray-800'})
+    for day in rows[1:]:
+        td_list = []
+        for td in day:
+            if td != '\n':
+                td_list.append(td)
+        dayHeader = td_list[0].string
+        available = td_list[2].strong.string
+        apptsDict[dayHeader] = available
 
-    for day in gilletteList:
-        dayHeader = day.find('p', attrs={'class':'text-xl font-black'})
-        dayList = dayHeader.text.split()
-        date = dayList[-1]
-
-        # find available appointments
-        allP = day.find_all('p')
-        for p in allP:
-
-            if "Available" in p.text:
-                col = p.text.find(":")
-                appts = int(p.text[col+1:])
-
-                if date in apptsDict:
-                    apptsDict[date] += appts
-                else:
-                    apptsDict[date] = appts
     return apptsDict
-
-######################################################################
 
 def run():
     # set request interval to 5 seconds so as to not overload the site
@@ -128,11 +107,8 @@ def run():
     while True:
         try:
             appts.clear()
-            htmlPage1 = getHTML('1')
+            htmlPage1 = getHTML()
             appts = parseResp(htmlPage1)
-
-            htmlPage2 = getHTML('2')
-            appts = parseResp(htmlPage2, appts)
 
         # catch either web connection error or website is overloaded error
         except Exception:
@@ -154,7 +130,7 @@ def run():
 
         for d in appts:
             print(d, appts[d])
-            if appts[d] > 20 and sendEmailNot:
+            if int(appts[d]) > 20 and sendEmailNot:
 
                 try:
                     msg = craftMessage(d, email)
